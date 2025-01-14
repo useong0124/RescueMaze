@@ -292,7 +292,7 @@ def node():
     gyro.reset_angle(0)
     while True:
         tof = getTOF()
-        pid_control(200, 5, 1, 0)
+        pid_control(250, 5, 1, 0)
         if tof.condition:
             if tof.t3 <= 70:
                 break
@@ -301,10 +301,11 @@ def node():
     robot.stop()
     tof = gTOF()
     n, w, e = 1, 1, 1
-    if tof.t1 > 150:
+    if tof.t2 > 150:
         openList.insert(0, nextDir[heading][2])
         e = 0
-    if tof.t2 > 150:
+        print(333333)
+    if tof.t1 > 150:
         w = 0
         openList.insert(0, nextDir[heading][1])
     if tof.t3 > 200:
@@ -337,10 +338,11 @@ for i in range(5):
             pid_turn(90)
         else:
             pid_turn(-90)
-        
+        print(2222222222)
         openList.remove(nextNode)
     gyro.reset_angle(0)
     print(openList, tof, nextNode)
+    print(robot.distance())
     robot.reset()
 
 # while True:
