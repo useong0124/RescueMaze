@@ -150,6 +150,7 @@ def getTOF():
         return null_tof
 
 def gTOF():
+    ser.clear()
     while True:
         tof = getTOF()
         if tof.condition:
@@ -161,7 +162,7 @@ def pid_control(speed, gain, kp, kd):
     # 전역변수를 지역변수로
     global lastYaw; global max_error
     # 라인트레이싱 - PID control
-    yaw = 0 - gyro.angle()
+    yaw = 0 + gyro.angle()
     differential = yaw - lastYaw
     lastYaw = yaw
     # 적분 상수를 0으로 입력할 경우
@@ -172,7 +173,7 @@ def pid_control(speed, gain, kp, kd):
 lastTurnYaw = 0
 def pid_turn_control(dest, gain, kp, kd):
     global lastTurnYaw
-    yaw = dest-gyro.angle()
+    yaw = dest+gyro.angle()
     diff = yaw - lastTurnYaw
     lastTurnYaw = yaw
     steering = (kp * yaw + kd * diff) * gain
@@ -182,12 +183,12 @@ def pid_turn_control(dest, gain, kp, kd):
 # Initialize the EV3
 ev3 = EV3Brick()
 
-def pid_turn(dest, time = 1950):
+def pid_turn(dest, time = 1700):
     global heading
     i = 0
     turn_cl.reset()
     while turn_cl.time() < time:
-        pid_turn_control(dest, 7.8, 1.2, 2)
+        pid_turn_control(dest, 7.6, 1.3, 2)
         if gyro.angle() == 0 and i == 0:
             turn_cl.reset()
             i = 1
@@ -228,17 +229,17 @@ def checkHeading():
 def getAzimuth(n, w, e):
     s = 0
     tn, ts, tw, te = n, 0, w, e
-    if heading == 1:
+    if heading == 1:#오른쪽쪽
         tn = e
         tw = n
         ts = w
         te = s
-    elif heading == 2:
+    elif heading == 2:#뒤
         tn = s
         tw = e
         ts = n
         te = w
-    elif heading == 3:
+    elif heading == 3:# 왼쪽쪽
         tn = w
         tw = s
         ts = e
@@ -288,15 +289,21 @@ heading = 0 # heading
 back_list = []
 
 def back():
-    pid_turn(180, 2250)
+    pid_turn(180, 2000)
     
-    gyro.reset_angle(0)
     robot.reset()
+    ser.clear()
+    robot.stop(Stop.HOLD)
+    
+    wait(30)
+    gyro.reset_angle(0)
+
     while True:
+        print(gyro.angle())
         tof = getTOF()
-        pid_control(200, 6, 1.2, 2)
+        pid_control(200, 6, 1, 1.7)
         if tof.condition:
-            if tof.t3 <= 80:
+            if tof.t3 != 0 and tof.t3 <= 68:
                 break
         if robot.distance() < -285:
             break
@@ -308,11 +315,13 @@ def node():
     robot.reset()
     print(robot.distance())
     gyro.reset_angle(0)
+    
+    ser.clear()
     while True:
         tof = getTOF()
-        pid_control(200, 6, 1.2, 2)
+        pid_control(200, 6, 1, 1.7)
         if tof.condition:
-            if tof.t3 <= 80:
+            if tof.t3 != 0 and tof.t3 <= 68:
                 break
         if robot.distance() < -285:
             break
@@ -356,13 +365,33 @@ pid_turn(-90)
 node()
 pid_turn(90)
 node()
-pid_turn(90)
-node()
-node()
 node()
 pid_turn(90)
 
-
+node()
+pid_turn(90)
+node()
+pid_turn(-90)
+node()
+node()
+pid_turn(-90)
+node()
+back()
+node()
+pid_turn(90)
+node()
+pid_turn(-90)
+node()
+node()
+node()
+pid_turn(90)
+node()
+back()
+node()
+pid_turn(-90)
+node()
+pid_turn(90)
+node()
 # quit()
 
 # print(1)

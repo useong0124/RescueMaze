@@ -137,7 +137,7 @@ def gTOF():
 
 
 while True:
-    print(gTOF())
+    print(getTOF())
 
 
 gyro.reset_angle(0)
